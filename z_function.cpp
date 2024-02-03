@@ -1,3 +1,5 @@
+// z[i] -> maximum length of prefix matching starting at index i
+// z[0] = 0
 vector<ll> z_function(string &s) {
     ll n = s.size();
     vector<ll> z(n);
