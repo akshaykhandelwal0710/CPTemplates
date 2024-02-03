@@ -20,7 +20,7 @@ struct segtree{
        log = __builtin_ctz((unsigned int)size);
        d.resize(2*size, Data());
    }
-   void update(int k) { d[k] = op(d[2*k], d[2*k + 1]); }
+   void update(int k) { d[k] = op(d[2*k], d[2*k+1]); }
    void set(int p, Data x) {
        p += size;
        d[p] = x;
@@ -32,8 +32,8 @@ struct segtree{
        r += size;
        Data sml = Data(), smr = Data();
        while (l < r) {
-           if (l & 1) sml = op(sml, d[l++]);
-           if (r & 1) smr = op(d[--r], smr);
+           if (l&1) sml = op(sml, d[l++]);
+           if (r&1) smr = op(d[--r], smr);
            l >>= 1;
            r >>= 1;
        }
