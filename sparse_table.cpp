@@ -1,14 +1,16 @@
+// might want to #include<bit>
 const ll K = 20;
-const ll N = 5e5;
+const ll N = 2e5;
 ll spt[N][K];
-ll lg[N+1];
-for (ll i = 1; i <= N; i++) lg[i] = ((1LL<<lg[i-1]) == (i>>1) ? lg[i-1]+1 : lg[i-1]);
+constexpr auto log2_floor = [&](unsigned int i) {
+    return std::bit_width(i) - 1;
+};
 auto func = [&](ll a, ll b)->ll{
     return min(a, b);
 };
 auto range = [&](ll l, ll r)->ll{
-    ll k = (r-l+1);
-    return func(spt[l][lg[k]], spt[r-(1LL<<lg[k])+1][lg[k]]);
+    ll k = log2_floor(r-l+1);
+    return func(spt[l][k], spt[r-(1LL<<k)+1][k]);
 };
 auto construct = [&](vector<ll> &v)->void {
     ll n = v.size();
