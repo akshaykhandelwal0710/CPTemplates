@@ -1,4 +1,5 @@
-// do not forget to construct
+// DO NOT USE FOR n = 1
+// DO NOT FORGET TO CONSTRUCT
 // n length ka segtree banao path query ke liye (in[h_num[c]] to in[c] ka range query karo)
 const ll N = 2e5;
 vector<ll> adj[N];
