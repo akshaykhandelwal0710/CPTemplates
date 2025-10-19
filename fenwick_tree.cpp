@@ -1,19 +1,26 @@
-const ll N = 2e5;
-ll tree[N];
-struct bit{
+struct FenwickTree{
+    vector<ll> bit;
     ll n;
-    bit(ll n): n(n){
-        for (ll i = 0; i < n; i++) tree[i] = 0;
+    FenwickTree(ll n) {
+        this->n = n;
+        bit.assign(n, 0);
     }
-    void add(ll i, ll k){
-        for (; i < n; i = i|(i+1)) tree[i] += k;
+    FenwickTree(vector<ll> const &a): FenwickTree(a.size()) {
+        for (ll i = 0; i < n; i++) {
+            bit[i] += a[i];
+            ll r = i|(i+1);
+            if (r < n) bit[r] += bit[i];
+        }
     }
-    ll sum(ll r){
+    ll prefix_sum(ll r) {
         ll ret = 0;
-        for (; r >= 0; r = (r&(r+1))-1) ret += tree[r];
+        for (; r >= 0; r = (r&(r+1))-1) ret += bit[r];
         return ret;
     }
-    ll sum(ll l, ll r){
-        return sum(r)-sum(l-1);
+    ll range_sum(ll l, ll r) {
+        return prefix_sum(r) - prefix_sum(l-1);
+    }
+    void add(ll i, ll k) {
+        for (; i < n; i = i|(i+1)) bit[i] += k;
     }
 };
