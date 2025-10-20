@@ -3,7 +3,6 @@ struct Lazy{
 
     Lazy(){
         // initialise
-
     }
 };
 
@@ -12,7 +11,6 @@ struct Data{
 
     Data(){
         // initialise
-        
     }
 };
 
@@ -25,22 +23,18 @@ Lazy join_res_l = Lazy(); // store result of joining two lazy values here
 
 void join(Data &left, Data &right){
     // function for joining
-
 }
 
 void join_lazy(Lazy &nw, Lazy &old){
     // function for combining two lazy values
-    
 }
 
 void combine(Lazy &lazy, Data &val){
     // change data as per lazy value
-
 }
 
 void assign(Data &from, Data &to){
     // copy all the data in 'from' to 'to'
-
 }
 
 struct segmentTree{
@@ -59,15 +53,16 @@ struct segmentTree{
 
     void push_down(){
         if (!prop) return;
-        combine(lazy, val);
         prop = false;
-        if (low == high){   
+        if (low == high){
             lazy = idt_l;
             return;
         }
         left->prop = right->prop = true;
+        combine(lazy, left->val);
         join_lazy( lazy, left->lazy);
         left->lazy = join_res_l;
+        combine(lazy, right->val);
         join_lazy(lazy, right->lazy);
         right->lazy = join_res_l;
         lazy = idt_l;
@@ -91,7 +86,6 @@ struct segmentTree{
     }
 
     void get(){
-        push_down();
         assign(val, result);
     }
 
@@ -99,52 +93,41 @@ struct segmentTree{
         if (init){
             assign(idt, result);
         }
-        push_down();
 
-        if (low > h || high < l){
-            return;
-        }
-        else if (low >= l && high <= h){
+        if (low >= l && high <= h){
             join(result, val);
             assign(join_res, result);
         }
         else{
-            left->get_range(l, h);
-            right->get_range(l, h);
+            push_down();
+            if (left->high >= l) left->get_range(l, h);
+            if (right->low <= h) right->get_range(l, h);
         }
     }
 
     void update_range(int l, int h, Lazy &lz){
-        push_down();
-
-        if (low > h || high < l){
-            return;
-        }
-        else if (low >= l && high <= h){
+        if (low >= l && high <= h){
             join_lazy(lz, lazy);
             lazy = join_res_l;
             prop = true;
-            push_down();
+            combine(lz, val);
         }
         else{
-            left->update_range(l, h, lz);
-            right->update_range(l, h, lz);
+            push_down();
+            if (left->high >= l) left->update_range(l, h, lz);
+            if (right->low <= h) right->update_range(l, h, lz);
             update_val();
         }
     }
 
     void change_val(int k, Data &vl){
-        push_down();
-
-        if (low > k || high < k){
-            return;
-        }
-        else if (low == high){
+        if (low == high){
             assign(vl, val);
         }
         else{
-            left->change_val(k, vl);
-            right->change_val(k, vl);
+            push_down();
+            if (left->high >= k) left->change_val(k, vl);
+            else right->change_val(k, vl);
             update_val();
         }
     }
