@@ -1,94 +1,151 @@
-struct Data {
-   // define data items
-   Data() {
-       // initialise data items
-   }
+struct Lazy{
+    // lazy data values
+
+    Lazy(){
+        // initialise
+
+    }
 };
-struct Lazy {
-   // define lazy items
-   Lazy() {
-       // initialise
-   }
+
+struct Data{
+    // data values
+
+    Data(){
+        // initialise
+        
+    }
 };
-Data op(Data &l, Data &r) {
-   // combine left and right data items
+
+Data idt = Data(); // additive identity
+Data join_res = Data(); // store result of joining here
+Data result = Data(); // any result from segtree gets stored here
+
+Lazy idt_l = Lazy(); // additive identity
+Lazy join_res_l = Lazy(); // store result of joining two lazy values here
+
+void join(Data &left, Data &right){
+    // function for joining
+
 }
-Lazy composition(Lazy &nw, Lazy &old) {
-   // combine old and new lazy values
+
+void join_lazy(Lazy &nw, Lazy &old){
+    // function for combining two lazy values
+    
 }
-void combine(Lazy &lz, Data &data) {
-   // apply the lazy values to data
+
+void combine(Lazy &lazy, Data &val){
+    // change data as per lazy value
+
 }
-struct segtree{
-   vector<Data> d;
-   vector<Lazy> lz;
-   int _n, log, size;
-   unsigned int bit_ceil(unsigned int n) {
-       unsigned int x = 1;
-       while (x < (unsigned int)(n)) x <<= 1;
-       return x;
-   }
-   segtree(int n): _n(n) {
-       size = (int)bit_ceil((unsigned int)(n));
-       log = __builtin_ctz((unsigned int)size);
-       d.resize(2*size, Data());
-       lz.resize(size, Lazy());
-   }
-   void update(int k) { d[k] = op(d[2*k], d[2*k+1]); }
-   void all_apply (int k, Lazy &f) {
-       combine(f, d[k]);
-       if (k < size) lz[k] = composition(f, lz[k]);
-   }
-   void push(int k) {
-       all_apply(2*k, lz[k]);
-       all_apply(2*k+1, lz[k]);
-       lz[k] = Lazy();
-   }
-   void set(int p, Data x) {
-       p += size;
-       for (int i = log; i >= 1; i--) push(p >> i);
-       d[p] = x;
-       for (int i = 1; i <= log; i++) update(p >> i);
-   }
-   Data prod(int l, int r) { // !!! q(l,r) return l to r-1
-       if (l == r) return Data();
-       l += size;
-       r += size;
-       for (int i = log; i >= 1; i--) {
-           if (((l>>i)<<i) != l) push(l>>i);
-           if (((r>>i)<<i) != r) push((r-1)>>i);
-       }
-       Data sml = Data(), smr = Data();
-       while (l < r) {
-           if (l&1) sml = op(sml, d[l++]);
-           if (r&1) smr = op(d[--r], smr);
-           l >>= 1;
-           r >>= 1;
-       }
-       return op(sml, smr);
-   }
-   void apply(int l, int r, Lazy &f) {
-       if (l == r) return;
-       l += size;
-       r += size;
-       for (int i = log; i >= 1; i--) {
-           if (((l>>i)<<i) != l) push(l>>i);
-           if (((r>>i)<<i) != r) push((r-1)>>i);
-       }
-       {
-           int l2 = l, r2 = r;
-           while (l < r) {
-               if (l&1) all_apply(l++, f);
-               if (r&1) all_apply(--r, f);
-               l >>= 1;
-               r >>= 1;
-           }
-           l = l2;
-           r = r2;
-       }
-       for (int i = 1; i <= log; i++) {
-           if (((l>>i)<<i) != l) update(l>>i);
-           if (((r>>i)<<i) != r) update((r-1)>>i);
-       }
-   }
+
+void assign(Data &from, Data &to){
+    // copy all the data in 'from' to 'to'
+
+}
+
+struct segmentTree{
+    int low, high;
+    bool init;
+    segmentTree *left;
+    segmentTree *right;
+    Data val;
+    Lazy lazy;
+    bool prop;
+
+    void update_val(){
+        join(left->val, right->val);
+        assign(join_res, val);
+    }
+
+    void push_down(){
+        if (!prop) return;
+        combine(lazy, val);
+        prop = false;
+        if (low == high){   
+            lazy = idt_l;
+            return;
+        }
+        left->prop = right->prop = true;
+        join_lazy( lazy, left->lazy);
+        left->lazy = join_res_l;
+        join_lazy(lazy, right->lazy);
+        right->lazy = join_res_l;
+        lazy = idt_l;
+    }
+
+    segmentTree(int l, int h, bool bl = true){
+        low = l;
+        high = h;
+        val = Data();
+        lazy = Lazy();
+        prop = false;
+        init = bl;
+        if (l < h){
+            int mid = (low + high)/2;
+            left = (segmentTree *)malloc(sizeof(segmentTree));
+            right = (segmentTree *)malloc(sizeof(segmentTree));
+            *left = segmentTree(low, mid, false);
+            *right = segmentTree(mid+1, high, false);
+            update_val();
+        }
+    }
+
+    void get(){
+        push_down();
+        assign(val, result);
+    }
+
+    void get_range(int l, int h){
+        if (init){
+            assign(idt, result);
+        }
+        push_down();
+
+        if (low > h || high < l){
+            return;
+        }
+        else if (low >= l && high <= h){
+            join(result, val);
+            assign(join_res, result);
+        }
+        else{
+            left->get_range(l, h);
+            right->get_range(l, h);
+        }
+    }
+
+    void update_range(int l, int h, Lazy &lz){
+        push_down();
+
+        if (low > h || high < l){
+            return;
+        }
+        else if (low >= l && high <= h){
+            join_lazy(lz, lazy);
+            lazy = join_res_l;
+            prop = true;
+            push_down();
+        }
+        else{
+            left->update_range(l, h, lz);
+            right->update_range(l, h, lz);
+            update_val();
+        }
+    }
+
+    void change_val(int k, Data &vl){
+        push_down();
+
+        if (low > k || high < k){
+            return;
+        }
+        else if (low == high){
+            assign(vl, val);
+        }
+        else{
+            left->change_val(k, vl);
+            right->change_val(k, vl);
+            update_val();
+        }
+    }
 };
