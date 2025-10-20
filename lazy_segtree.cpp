@@ -84,6 +84,21 @@ struct segmentTree{
             update_val();
         }
     }
+    
+    segmentTree(int l, int h, vector<Data> &v, bool bl = true) {
+        low = l;
+        high = h;
+        assign(v[l], val);
+        lazy = Lazy();
+        prop = false;
+        init = bl;
+        if (l < h) {
+            int mid = (low+high)/2;
+            left = new segmentTree(low, mid, v, false);
+            right = new segmentTree(mid+1, high, v, false);
+            update_val();
+        }
+    }
 
     void get(){
         assign(val, result);
