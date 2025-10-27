@@ -1,0 +1,104 @@
+const int mod = 998244353;
+const int root = 15311432;
+const int root_1 = mod_inv(root, mod);
+const int root_pw = 1<<23;
+ll pows[1<<20]; // Change if required
+void ntt(vector<int> &v, bool invert = false) {
+    int n = v.size();
+    for (int i = 1, j = 0; i < n; i++) {
+        int bit = n>>1;
+        for (; j&bit; bit >>= 1) j ^= bit;
+        j ^= bit;
+        if (i < j) swap(v[i], v[j]);
+    }
+    for (int len = 2; len <= n; len <<= 1) {
+        int wlen = invert ? root_1 : root;
+        for (int i = len; i < root_pw; i <<= 1) wlen = ((ll)wlen*wlen)%mod;
+        pows[0] = 1;
+        for (int k = 1; k < len/2; k++) pows[k] = (pows[k-1]*wlen)%mod;
+        for (int i = 0; i < n; i += len) {
+            for (int j = 0; j < len/2; j++) {
+                int a = v[i+j], b = (v[i+j+len/2]*pows[j])%mod;
+                v[i+j] = a+b < mod ? a+b : a+b-mod;
+                v[i+j+len/2] = a-b >= 0 ? a-b : a-b+mod;
+            }
+        }
+    }
+    if (invert) {
+        ll n_1 = mod_inv(n, mod);
+        for (int &x: v) x = (x*n_1)%mod;
+    }
+}
+vector<int> mult(vector<int> a, vector<int> b) {
+    int t = (int)a.size()+(int)b.size()-1;
+    int n = 1;
+    while (n < t) n <<= 1;
+    a.resize(n, 0);
+    b.resize(n, 0);
+    ntt(a);
+    ntt(b);
+    for (int i = 0; i < n; i++) a[i] = ((ll)a[i]*b[i])%mod;
+    ntt(a, true);
+    a.resize(t);
+    return a;
+}
+vector<int> diff(vector<int> &a) {
+    int n = a.size();
+    vector<int> ret(n-1, 0);
+    for (ll i = 0; i+1 < n; i++) ret[i] = (a[i+1]*(i+1))%mod;
+    return ret;
+}
+vector<int> integ(vector<int> &a) {
+    ll n = a.size();
+    vector<int> ret(n+1, 0);
+    for (ll i = 1; i <= n; i++) ret[i] = (a[i-1]*mod_inv(i, mod))%mod;
+    return ret;
+}
+vector<int> inverse(vector<int> &a) {
+    vector<int> neg_a = a;
+    for (auto &x: neg_a) x = x ? mod-x : 0;
+    vector<int> q = {(int)mod_inv(a[0], mod)};
+    ll n = 1, m = 1;
+    while (n < (ll)a.size()) n <<= 1;
+    neg_a.resize(n, 0);
+    while (m < n) {
+        vector<int> tmp(4*m, 0);
+        q.resize(4*m, 0);
+        for (int i = 0; i < 2*m; i++) tmp[i] = neg_a[i];
+        ntt(q);
+        ntt(tmp);
+        for (int i = 0; i < 4*m; i++) tmp[i] = ((ll)q[i]*tmp[i])%mod;
+        ntt(tmp, true);
+        tmp[0] = tmp[0]+2 < mod ? tmp[0]+2 : tmp[0]+2-mod;
+        ntt(tmp);
+        for (int i = 0; i < 4*m; i++) q[i] = ((ll)q[i]*tmp[i])%mod;
+        ntt(q, true);
+        q.resize(2*m);
+        m <<= 1;
+    }
+    q.resize((int)a.size());
+    return q;
+}
+vector<int> log(vector<int> &a) {
+    vector<int> tmp = mult(diff(a), inverse(a));
+    tmp.resize((int)a.size()-1);
+    return integ(tmp);
+}
+vector<int> exp(vector<int> &a) {
+    int n = 1;
+    while (n < (ll)a.size()) n <<= 1;
+    vector<int> q = {1};
+    vector<int> a_copy = a;
+    a_copy.resize(n, 0);
+    a_copy[0] = a_copy[0]+1 < mod ? a_copy[0]+1 : a_copy[0]+1-mod;
+    int m = 1;
+    while (m < n) {
+        q.resize(2*m, 0);
+        vector<int> tmp = log(q);
+        for (ll i = 0; i < 2*m; i++) tmp[i] = a_copy[i] < tmp[i] ? a_copy[i]-tmp[i]+mod : a_copy[i]-tmp[i];
+        q = mult(q, tmp);
+        m <<= 1;
+    }
+    q.resize((int)a.size());
+    return q;
+}
