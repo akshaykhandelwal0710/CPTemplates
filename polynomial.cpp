@@ -46,6 +46,7 @@ vector<int> mult(vector<int> a, vector<int> b) {
     return a;
 }
 vector<int> multimul(vector<vector<int>> v) {
+    if (v.empty()) return {1};
     vector<vector<int>> nv;
     int n = 1;
     for (int i = 0; i < v.size(); i++) n += (int)v[i].size()-1;
