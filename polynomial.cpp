@@ -212,3 +212,23 @@ vector<int> comp_inv(vector<int> &a) {
     q.resize((int)a.size());
     return q;
 }
+pair<vector<int>, vector<int>> divide(vector<int> &num, vector<int> &den) {
+    int n = num.size(), m = den.size();
+    if (n < m) return {{}, num};
+    int k = n-m+1;
+    vector<int> numr = num;
+    vector<int> denr = den;
+    reverse(numr.begin(), numr.end());
+    reverse(denr.begin(), denr.end());
+    denr.resize(k, 0);
+    denr = inverse(denr);
+    vector<int> q = mult(numr, denr);
+    q.resize(k);
+    reverse(q.begin(), q.end());
+    vector<int> r = mult(q, den);
+    r.resize(m);
+    for (int i = 0; i < min(n, m); i++) r[i] = num[i] < r[i] ? num[i]-r[i]+mod : num[i]-r[i];
+    while (!r.empty() && r.back() == 0) r.pop_back();
+    while (!q.empty() && q.back() == 0) q.pop_back();
+    return {q, r};
+}
