@@ -1,3 +1,6 @@
+inline constexpr ll modPow(ll a, ll b, ll c) {
+    return ((b & 1) ? (a * modPow(a, b ^ 1, c) % c) : (b == 0) ? 1 : (modPow(a*a % c, b >> 1, c)));
+}
 const int mod = 998244353;
 const int root = 15311432;
 const int root_1 = mod_inv(root, mod);
@@ -101,4 +104,27 @@ vector<int> exp(vector<int> &a) {
     }
     q.resize((int)a.size());
     return q;
+}
+vector<int> pow(vector<int> &a, ll k) {
+    int n = a.size();
+    if (k == 0) {
+        vector<int> ret(n, 0);
+        ret[0] = 1;
+        return ret;
+    }
+    int st = 0;
+    while (st < n && a[st] == 0) ++st;
+    if (st == n || (__int128)k*st >= n) return vector<int>(n, 0);
+    int alpha = a[st];
+    int alpha_iv = mod_inv(a[st], mod);
+    n -= st;
+    vector<int> v(n, 0);
+    for (int i = 0; i < n; i++) v[i] = ((ll)a[i+st]*alpha_iv)%mod;
+    v = log(v);
+    for (int i = 0; i < v.size(); i++) v[i] = ((__int128)k*v[i])%mod;
+    v = exp(v);
+    vector<int> ans(n+st, 0);
+    alpha = modPow(alpha, k, mod);
+    for (int i = 0; i+st*k < n+st; i++) ans[i+st*k] = ((ll)v[i]*alpha)%mod;
+    return ans;
 }
