@@ -128,3 +128,65 @@ vector<int> pow(vector<int> &a, ll k) {
     for (int i = 0; i+st*k < n+st; i++) ans[i+st*k] = ((ll)v[i]*alpha)%mod;
     return ans;
 }
+vector<int> compose(vector<int> &f, vector<int> &g) {
+    int n = min((int)f.size(), (int)g.size());
+    int m = ceil(sqrt(n));
+    int t = (n+m-1)/m;
+    vector<vector<int>> gpow(m);
+    gpow[0] = vector<int>(n, 0);
+    gpow[0][0] = 1;
+    for (int i = 1; i < m; i++) {
+        gpow[i] = mult(gpow[i-1], g);
+        gpow[i].resize(n);
+    }
+    vector<int> G = mult(gpow[m-1], g);
+    G.resize(n);
+    vector<vector<int>> Gpow(t);
+    Gpow[0] = vector<int>(n, 0);
+    Gpow[0][0] = 1;
+    for (int i = 1; i < t; i++) {
+        Gpow[i] = mult(Gpow[i-1], G);
+        Gpow[i].resize(n);
+    }
+    vector<vector<int>> Fj(t, vector<int>(m, 0));
+    for (int i = 0; i < n; i++) Fj[i/m][i%m] = f[i];
+    vector<vector<int>> Ej(t, vector<int>(n, 0));
+    for (int j = 0; j < t; j++) {
+        for (int x = 0; x < n; x++) {
+            __int128 val = 0;
+            for (int i = 0; i < m; i++) val += (ll)gpow[i][x]*Fj[j][i];
+            Ej[j][x] = val%mod;
+        }
+    }
+    vector<int> res(n, 0);
+    for (int j = 0; j < t; j++) {
+        vector<int> v = mult(Ej[j], Gpow[j]);
+        for (int i = 0; i < n; i++) {
+            res[i] += v[i];
+            if (res[i] >= mod) res[i] -= mod;
+        }
+    }
+    return res;
+}
+vector<int> comp_inv(vector<int> &a) {
+    int n = 1;
+    while (n < (int)a.size()) n <<= 1;
+    vector<int> q = {0};
+    int m = 1;
+    while (m < n) {
+        q.resize(2*m, 0);
+        vector<int> f(2*m+1, 0);
+        for (int i = 0; i < min(2*m+1, (int)a.size()); i++) f[i] = a[i];
+        vector<int> fd = diff(f);
+        f.pop_back();
+        f = compose(f, q);
+        fd = compose(fd, q);
+        fd = inverse(fd);
+        f[1] = f[1] == 0 ? mod-1 : f[1]-1;
+        f = mult(f, fd);
+        for (int i = 0; i < 2*m; i++) q[i] = q[i] < f[i] ? q[i]-f[i]+mod : q[i]-f[i];
+        m <<= 1;
+    }
+    q.resize((int)a.size());
+    return q;
+}
