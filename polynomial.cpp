@@ -45,6 +45,28 @@ vector<int> mult(vector<int> a, vector<int> b) {
     a.resize(t);
     return a;
 }
+vector<int> multimul(vector<vector<int>> v) {
+    vector<vector<int>> nv;
+    int n = 1;
+    for (int i = 0; i < v.size(); i++) n += (int)v[i].size()-1;
+    int m = 1;
+    while ((int)v.size() > 1) {
+        int i = 0;
+        int l = (int)v.size();
+        nv.clear();
+        while (i < l) {
+            if (i == l-1) {
+                nv.push_back(v[i]);
+                ++i;
+                break;
+            }
+            nv.push_back(mult(v[i], v[i+1]));
+            i += 2;
+        }
+        swap(v, nv);
+    }
+    return v[0];
+}
 vector<int> diff(vector<int> &a) {
     int n = a.size();
     vector<int> ret(n-1, 0);
