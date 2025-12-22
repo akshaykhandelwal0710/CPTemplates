@@ -15,7 +15,7 @@ bool mr_test(ll n) {
     ll a = rand_int(2, n-1);
     ll x = mod_pow(a, d, n);
     if (x == 1 || x == n-1) return true;
-    for (ll r = 0; r < s; r++) {
+    for (ll r = 0; r < s-1; r++) {
         x = ((__int128)x*x)%n;
         if (x == n-1) return true;
     }
